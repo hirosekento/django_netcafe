@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>ネットカフェ 管理</title>
+  <style>
+    .seat { display:inline-block; width:150px; height:120px; border:1px solid #ccc; margin:6px; padding:6px; border-radius:6px; text-align:center; }
+    .occupied { background:#ffecec; }
+  </style>
+</head>
+<body>
+  <h1>ネットカフェ管理システム</h1>
+  <div>
+{% load filters %}
+
+{% for seat in seats %}
+  {% with session=open_sessions|get_item:seat.number %}
+    <div class="seat-card">
+      <p>席番号: {{ seat.number }}</p>
+      {% if session %}
+        <p>開始時刻: {{ session.start_at|date:"H:i" }}</p>
+        <form method="post" action="{% url 'end_session' seat.id %}">
+          {% csrf_token %}
+          <button type="submit">計測終了</button>
+        </form>
+      {% else %}
+        <form method="post" action="{% url 'start_session' seat.id %}">
+          {% csrf_token %}
+          <select name="plan">
+            {% for plan in plans %}
+              <option value="{{ plan.id }}">{{ plan.name }} ({{ plan.price_per_hour }}円/h)</option>
+            {% endfor %}
+          </select>
+          <button type="submit">計測開始</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endwith %}
+{% endfor %}
+  </div>
+</body>
+</html>
